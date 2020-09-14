@@ -30,7 +30,7 @@
 <script>
   export let post
   console.log(post.image)
-  const heroQuerySize = `?fit=crop&crop=entropy&w=500`
+  const heroQuerySize = `?w=500`
 </script>
 
 <style>
@@ -41,7 +41,7 @@
   }
 
   h1 {
-    font-size: 2.8em;
+    font-size: 2rem;
     text-transform: uppercase;
     font-weight: 700;
     margin: 0 0 0.5em 0;
