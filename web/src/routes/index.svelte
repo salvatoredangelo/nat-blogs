@@ -2,13 +2,15 @@
   import client from '../sanityClient'
   import BlockContent from '@movingbrands/svelte-portable-text'
   import serializers from '../components/serializers'
+  const contentType = 'post'
   export async function preload({ params }) {
-    const filter = '*[_type == "post"]|order(publishedAt desc)[0]'
+    const filter = `*[_type == "${contentType}"]|order(publishedAt desc)[0]`
     const projection = `{
       ...,
       "image": mainImage.asset->url,
       "caption": mainImage.caption,
       "alt": mainImage.alt,
+      mainImage,
       body[]{
         ...,
         children[]{
@@ -29,8 +31,13 @@
 
 <script>
   export let post
-  console.log(post.image)
-  const heroQuerySize = `?w=500`
+
+  import myConfiguredSanityClient from '../sanityClient'
+  import imageUrlBuilder from '@sanity/image-url'
+
+  const builder = imageUrlBuilder(myConfiguredSanityClient)
+
+  const urlFor = (source) => builder.image(source)
 </script>
 
 <style>
@@ -53,6 +60,12 @@
   b {
     text-decoration: underline;
   }
+  figure {
+    width: 100%;
+  }
+  img {
+    width: 100%;
+  }
 
   @media (min-width: 480px) {
     h1 {
@@ -65,8 +78,6 @@
   <title>Nat's Portfolio</title>
 </svelte:head>
 
-<h1>Nat's Portfolio</h1>
-
 <h2>
   <b>Latest Post</b>
 </h2>
@@ -74,7 +85,7 @@
 <h3>{post.title}</h3>
 
 <figure>
-  <img src={`${post.image}${heroQuerySize}`} alt={post.alt} />
+  <img src={urlFor(post.image).width(100).url()} alt={post.alt} />
   <figcaption>{post.caption}</figcaption>
 </figure>
 

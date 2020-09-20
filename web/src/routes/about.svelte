@@ -31,7 +31,6 @@
 
 <script>
   export let author
-  console.log(author)
   const heroQuerySize = `?fit=crop&crop=entropy&w=500`
 </script>
 
