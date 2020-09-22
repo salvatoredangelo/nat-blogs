@@ -2,10 +2,13 @@
   import client from '../sanityClient'
   import BlockContent from '@movingbrands/svelte-portable-text'
   import serializers from '../components/serializers'
-  const contentType = 'post'
   export async function preload({ params }) {
-    const filter = `*[_type == "${contentType}"]|order(publishedAt desc)[0]`
-    const projection = `{
+    const settings = `*[_type == "siteSettings"][0]{
+      title,
+      "hero": image.asset->url,
+      "alt": image.alt
+    }`
+    const firstPost = `*[_type == "post"]|order(publishedAt desc)[0]{
       ...,
       "image": mainImage.asset->url,
       "caption": mainImage.caption,
@@ -23,14 +26,19 @@
       }
     }`
 
-    const query = filter + projection
-    const post = await client.fetch(query).catch((err) => this.error(500, err))
-    return { post }
+    const query = `{
+      "settings": ${settings},
+      "post": ${firstPost},
+    }`
+    const result = await client.fetch(query).catch((err) => this.error(500, err))
+    return { result }
   }
 </script>
 
 <script>
-  export let post
+  export let result
+  const {post, settings} = result
+  const { title, hero: src, alt } = settings
 
   import myConfiguredSanityClient from '../sanityClient'
   import imageUrlBuilder from '@sanity/image-url'
@@ -41,36 +49,29 @@
 </script>
 
 <style>
-  h1,
-  p {
-    text-align: center;
-    margin: 0 auto;
+  section {
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    place-content: center;
   }
-
   h1 {
-    font-size: 2rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin: 0 0 0.5em 0;
+    font-size: 3rem;
   }
-  p {
-    margin: 1em auto;
+  article {
+    padding: 0 3rem;
   }
-
-  b {
-    text-decoration: underline;
+  h2 {
+    font-size: 2.3rem;
   }
   figure {
     width: 100%;
+    height: auto;
   }
   img {
     width: 100%;
-  }
-
-  @media (min-width: 480px) {
-    h1 {
-      font-size: 4em;
-    }
+    height: 50vh;
+    object-fit: cover;
   }
 </style>
 
@@ -78,6 +79,11 @@
   <title>Nat's Portfolio</title>
 </svelte:head>
 
+<section style="background: url('{src}');" aria-label="{alt}">
+  <h1>{title}</h1>
+</section>
+
+<article>
 <h2>
   <b>Latest Post</b>
 </h2>
@@ -85,7 +91,7 @@
 <h3>{post.title}</h3>
 
 <figure>
-  <img src={urlFor(post.image).width(100).url()} alt={post.alt} />
+  <img src={urlFor(post.image).url()} alt={post.alt} />
   <figcaption>{post.caption}</figcaption>
 </figure>
 
@@ -101,3 +107,4 @@
     <a href="https://www.sanity.io">Sanity</a>
   </strong>
 </p>
+</article>
